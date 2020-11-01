@@ -50,6 +50,7 @@ void pageRank(Graph g, double* solution, double damping, double convergence)
   int* numEdgesLeavingFrom =  (int*)malloc(sizeof(int) * numNodes); // edge -> node
   int* numEdgesReachingTo =  (int*)malloc(sizeof(int) * numNodes); // edge -> node
   double* local_diff = (double*)malloc(sizeof(double) * nTotThreads);
+  double* local_score = (double*)malloc(sizeof(double) * nTotThreads);
   double* score_old = (double*)malloc(sizeof(double) * numNodes);
   int scoreFromNodeNoOutLike = 0;
 
@@ -71,17 +72,21 @@ void pageRank(Graph g, double* solution, double damping, double convergence)
     // initialize for no outgoing edges numEdge    
     scoreFromNodeNoOutLike = 0;
     double global_diff = 0;
-
-    printf("nThread: %d\n", nTotThreads);
+    
     for (int iThread = 0; iThread < nTotThreads; iThread++){
       local_diff[iThread] = 0;
+      local_score[iThread] = 0;
     }
 
     #pragma omp parallel for schedule(guided)
     for (int vi = 0; vi < numNodes; ++vi) {
       // sum over all nodes v in graph with no outgoing edges
-      scoreFromNodeNoOutLike += damping * score_old[vi] / numNodes;
+      local_score[omp_get_thread_num()] += damping * score_old[vi] / numNodes;
       solution[vi] = 0;
+    }
+
+    for (int iThread = 0; iThread < nTotThreads; iThread++){
+      scoreFromNodeNoOutLike += local_score[iThread];
     }
     
     #pragma omp parallel for schedule(guided)
