@@ -81,7 +81,9 @@ void pageRank(Graph g, double* solution, double damping, double convergence)
     #pragma omp parallel for schedule(guided)
     for (int vi = 0; vi < numNodes; ++vi) {
       // sum over all nodes v in graph with no outgoing edges
-      local_score[omp_get_thread_num()] += damping * score_old[vi] / numNodes;
+      if(numEdgesLeavingFrom[vi] == 0){
+        local_score[omp_get_thread_num()] += damping * score_old[vi] / numNodes;
+      }
       solution[vi] = 0;
     }
 
