@@ -64,6 +64,13 @@ void pageRank(Graph g, double* solution, double damping, double convergence)
     // initialize for no outgoing edges numEdge    
     scoreFromNodeNoOutLike = 0;
     double global_diff = 0;
+    int nTotThreads = 0;
+    #pragma omp parallel
+    {
+      #pragma omp single
+      nTotThreads = omp_get_num_threads();
+    }
+
     printf("nThread: %d\n", omp_get_num_threads());
     for (int iThread = 0; iThread < omp_get_num_threads(); iThread++){
       local_diff[iThread] = 0;
