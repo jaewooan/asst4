@@ -47,8 +47,8 @@ void pageRank(Graph g, double* solution, double damping, double convergence)
     nTotThreads = omp_get_num_threads();
   }
 
-  int* numEdgesLeavingFrom =  (int*)malloc(sizeof(int) * numNodes); // edge -> node
-  int* numEdgesReachingTo =  (int*)malloc(sizeof(int) * numNodes); // edge -> node
+  int* numEdgesLeavingFrom = (int*)malloc(sizeof(int) * numNodes); // edge -> node
+  int* numEdgesReachingTo = (int*)malloc(sizeof(int) * numNodes); // edge -> node
   double* local_diff = (double*)malloc(sizeof(double) * nTotThreads);
   double* local_score = (double*)malloc(sizeof(double) * nTotThreads);
   double* score_old = (double*)malloc(sizeof(double) * numNodes);
@@ -97,9 +97,9 @@ void pageRank(Graph g, double* solution, double damping, double convergence)
         // compute score_new[vi] for all nodes vi:
         int vj = g->incoming_edges[g->incoming_starts[vi] + iEdge];
         solution[vi] += score_old[vj] / numEdgesLeavingFrom[vj];
-        solution[vi] = (damping * solution[vi]) + (1.0 - damping) / numNodes;
-        solution[vi] += scoreFromNodeNoOutLike;
       }
+      solution[vi] = (damping * solution[vi]) + (1.0 - damping) / numNodes;
+      solution[vi] += scoreFromNodeNoOutLike;
       local_diff[omp_get_thread_num()] += std::fabs(solution[vi] - score_old[vi]);
     }
 
