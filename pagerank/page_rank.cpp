@@ -89,6 +89,7 @@ void pageRank(Graph g, double* solution, double damping, double convergence)
 
     for (int iThread = 0; iThread < nTotThreads; iThread++){
       scoreFromNodeNoOutLike += local_score[iThread];
+      printf("zero tot %d at %d\n", scoreFromNodeNoOutLike, iThread);
     }
     
     #pragma omp parallel for schedule(guided)
