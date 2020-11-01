@@ -49,7 +49,7 @@ void pageRank(Graph g, double* solution, double damping, double convergence)
   #pragma omp parallel for schedule(guided)
   for (int vi = 0; vi < numNodes; ++vi) {
     score_old[vi] = solution[vi];
-    if(i < numNodes - 1){
+    if(vi < numNodes - 1){
       numEdgesLeavingFrom[vi] =  g->outgoing_starts[vi+1] - g->outgoing_starts[vi];
       numEdgesReachingTo[vi] =  g->incoming_starts[vi+1] - g->incoming_starts[vi];
     }
@@ -79,7 +79,7 @@ void pageRank(Graph g, double* solution, double damping, double convergence)
     for (int vi = 0; vi < numNodes; ++vi) {
       for(int iEdge = 0; iEdge < numEdgesReachingTo[vi]; iEdge++) {
         // compute score_new[vi] for all nodes vi:
-        int vj = graph->incoming_edges[g->incoming_starts[vi] + iEdge];
+        int vj = g->incoming_edges[g->incoming_starts[vi] + iEdge];
         solution[vi] += score_old[vj] / numEdgesLeavingFrom[vj];
         solution[vi] = (damping * solution[vi]) + (1.0 - damping) / numNodes;
         solution[vi] += scoreFromNodeNoOutLike;
@@ -93,7 +93,7 @@ void pageRank(Graph g, double* solution, double damping, double convergence)
 
     // compute how much per-node scores have changed
     // quit once algorithm has converged
-    converged = (global_diff < convergence)
+    converged = (global_diff < convergence);
 
     #pragma omp parallel for schedule(guided)
     for (int vi = 0; vi < numNodes; ++vi) {
