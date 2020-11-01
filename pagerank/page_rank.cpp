@@ -40,9 +40,16 @@ void pageRank(Graph g, double* solution, double damping, double convergence)
   */
   // initialization: see example code above
   
+  int nTotThreads = 0;
+  #pragma omp parallel
+  {
+    #pragma omp single
+    nTotThreads = omp_get_num_threads();
+  }
+
   int* numEdgesLeavingFrom =  (int*)malloc(sizeof(int) * numNodes); // edge -> node
   int* numEdgesReachingTo =  (int*)malloc(sizeof(int) * numNodes); // edge -> node
-  double* local_diff = (double*)malloc(sizeof(double) * omp_get_num_threads());
+  double* local_diff = (double*)malloc(sizeof(double) * nTotThreads);
   double* score_old = (double*)malloc(sizeof(double) * numNodes);
   int scoreFromNodeNoOutLike = 0;
 
@@ -64,15 +71,9 @@ void pageRank(Graph g, double* solution, double damping, double convergence)
     // initialize for no outgoing edges numEdge    
     scoreFromNodeNoOutLike = 0;
     double global_diff = 0;
-    int nTotThreads = 0;
-    #pragma omp parallel
-    {
-      #pragma omp single
-      nTotThreads = omp_get_num_threads();
-    }
 
-    printf("nThread: %d\n", omp_get_num_threads());
-    for (int iThread = 0; iThread < omp_get_num_threads(); iThread++){
+    printf("nThread: %d\n", nTotThreads);
+    for (int iThread = 0; iThread < nTotThreads; iThread++){
       local_diff[iThread] = 0;
     }
 
@@ -95,7 +96,7 @@ void pageRank(Graph g, double* solution, double damping, double convergence)
       local_diff[omp_get_thread_num()] += std::fabs(solution[vi] - score_old[vi]);
     }
 
-    for (int iThread = 0; iThread < omp_get_num_threads(); iThread++){
+    for (int iThread = 0; iThread < nTotThreads; iThread++){
       global_diff += local_diff[iThread];
     }
 
