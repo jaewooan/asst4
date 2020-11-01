@@ -116,4 +116,9 @@ void pageRank(Graph g, double* solution, double damping, double convergence)
       score_old[vi] = solution[vi];
     }
   }  
+  free(numEdgesLeavingFrom);
+  free(numEdgesReachingTo); // edge -> node
+  free(local_diff);
+  free(local_score);
+  free(score_old);
 }
