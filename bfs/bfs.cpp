@@ -50,7 +50,7 @@ void top_down_step(
                 while(1){
                     int old_index = new_frontier->count;
                     int new_index = new_frontier->count + 1;
-                    if(__sync_bool_compare_and_swap(&new_frontier->count)){
+                    if(__sync_bool_compare_and_swap(&new_frontier->count, old_index, new_index)){
                         int index = new_frontier->count++;
                         new_frontier->vertices[index] = outgoing;
                     }
