@@ -52,6 +52,7 @@ void top_down_step(
                     int new_index = old_index < new_frontier->max_vertices - 1 ? old_index + 1 : new_frontier->max_vertices - 1;
                     if(__sync_bool_compare_and_swap(&new_frontier->count, old_index, new_index)){
                         new_frontier->vertices[new_index] = outgoing;
+                        break;
                     }
                 }
             }
