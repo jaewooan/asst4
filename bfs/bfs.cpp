@@ -47,7 +47,7 @@ void top_down_step(
         for (int neighbor=start_edge; neighbor<end_edge; neighbor++) {
             int outgoing = g->outgoing_edges[neighbor];
             if (distances[outgoing] == NOT_VISITED_MARKER) {
-                distance[outgoing] = new_distance;
+                distances[outgoing] = new_distance;
                 local_outgoing[local_count] = outgoing;    
 	  	        local_count++;	
             }
