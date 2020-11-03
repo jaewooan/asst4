@@ -46,7 +46,8 @@ void top_down_step(
         int local_count = 0;
         for (int neighbor=start_edge; neighbor<end_edge; neighbor++) {
             int outgoing = g->outgoing_edges[neighbor];
-            if (__sync_bool_compare_and_swap(&distances[outgoing], NOT_VISITED_MARKER, new_distance)) {
+            if (distances[outgoing] == NOT_VISITED_MARKER) {
+                distance[outgoing] = new_distance;
                 local_outgoing[local_count] = outgoing;    
 	  	        local_count++;	
             }
