@@ -54,18 +54,19 @@ void top_down_step(
         }
 
         if (local_count > 0){
-            int old_index = 0;
-            while(1){
+            int old_index = __sync_fetch_and_add(&new_frontier->count, local_count);
+            /*while(1){
                 old_index = new_frontier->count;
                 int new_index = old_index + local_count;
                 if(__sync_bool_compare_and_swap(&new_frontier->count, old_index, new_index)){	
                     break;
                 }
-            }
+            }*/
             for(int neighbor = 0; neighbor < local_count; neighbor++){
                 new_frontier->vertices[old_index + neighbor] = local_outgoing[neighbor];
             }
         }
+        free(local_outgoing);
     }
 }
 
