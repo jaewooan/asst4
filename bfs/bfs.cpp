@@ -42,10 +42,11 @@ void top_down_step(
                            : g->outgoing_starts[node + 1];
 
         // attempt to add all neighbors to the new frontier
-        #pragma omp parallel for schedule(guided)
         for (int neighbor=start_edge; neighbor<end_edge; neighbor++) {
             int outgoing = g->outgoing_edges[neighbor];
-            if (__sync_bool_compare_and_swap(&distances[outgoing], NOT_VISITED_MARKER, distances[node] + 1)) {
+
+            if (distances[outgoing] == NOT_VISITED_MARKER) {
+                distances[outgoing] = distances[node] + 1;
                 while(1){
                     int old_index = new_frontier->count;
                     int new_index = old_index < new_frontier->max_vertices - 1 ? old_index + 1 : new_frontier->max_vertices - 1;
