@@ -45,7 +45,6 @@ void top_down_step(
         for (int neighbor=start_edge; neighbor<end_edge; neighbor++) {
             int outgoing = g->outgoing_edges[neighbor];
             if (__sync_bool_compare_and_swap(&distances[outgoing], NOT_VISITED_MARKER, new_distance)) {
-                distances[outgoing] = distances[node] + 1;
                 while(1){
                     int old_index = new_frontier->count;
                     int new_index = old_index < new_frontier->max_vertices - 1 ? old_index + 1 : new_frontier->max_vertices - 1;
