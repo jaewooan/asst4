@@ -35,7 +35,7 @@ void top_down_step(
     for (int i=0; i<frontier->count; i++) {
 
         int node = frontier->vertices[i];
-
+        int new_distance = distances[node] + 1;
         int start_edge = g->outgoing_starts[node];
         int end_edge = (node == g->num_nodes - 1)
                            ? g->num_edges
@@ -44,8 +44,7 @@ void top_down_step(
         // attempt to add all neighbors to the new frontier
         for (int neighbor=start_edge; neighbor<end_edge; neighbor++) {
             int outgoing = g->outgoing_edges[neighbor];
-
-            if (distances[outgoing] == NOT_VISITED_MARKER) {
+            if (__sync_bool_compare_and_swap(&distances[outgoing], NOT_VISITED_MARKER, new_distance) {
                 distances[outgoing] = distances[node] + 1;
                 while(1){
                     int old_index = new_frontier->count;
