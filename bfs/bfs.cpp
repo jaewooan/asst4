@@ -34,7 +34,6 @@ void top_down_step(
     #pragma omp parallel for schedule(guided)
     for (int i=0; i<frontier->count; i++) {
         int node = frontier->vertices[i];
-        int new_distance = distances[node] + 1;
         int start_edge = g->outgoing_starts[node];
         int end_edge = (node == g->num_nodes - 1)
                            ? g->num_edges
@@ -42,12 +41,11 @@ void top_down_step(
         int* local_outgoing = (int*)malloc(sizeof(int) * (end_edge - start_edge));
 
         // attempt to add all neighbors to the new frontier
-        //#pragma omp parallel for schedule(guided)
         int local_count = 0;
         for (int neighbor=start_edge; neighbor<end_edge; neighbor++) {
             int outgoing = g->outgoing_edges[neighbor];
             if (distances[outgoing] == NOT_VISITED_MARKER) {
-                distances[outgoing] = new_distance;
+                distances[outgoing] = distances[node] + 1;
                 local_outgoing[local_count] = outgoing;    
 	  	        local_count++;	
             }
@@ -55,13 +53,6 @@ void top_down_step(
 
         if (local_count > 0){
             int old_index = __sync_fetch_and_add(&new_frontier->count, local_count);
-            /*while(1){
-                old_index = new_frontier->count;
-                int new_index = old_index + local_count;
-                if(__sync_bool_compare_and_swap(&new_frontier->count, old_index, new_index)){	
-                    break;
-                }
-            }*/
             for(int neighbor = 0; neighbor < local_count; neighbor++){
                 new_frontier->vertices[old_index + neighbor] = local_outgoing[neighbor];
             }
