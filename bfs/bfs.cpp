@@ -44,6 +44,7 @@ void top_down_step(
 
         // attempt to add all neighbors to the new frontier
         //#pragma omp parallel for schedule(guided)
+        printf("fin0\n");
         int local_count = end_edge - start_edge;
         for (int neighbor=start_edge; neighbor<end_edge; neighbor++) {
             int outgoing = g->outgoing_edges[neighbor];
@@ -51,7 +52,7 @@ void top_down_step(
                 local_outgoing[neighbor-start_edge] = outgoing;          
             }
         }
-
+        printf("fin1\n");
         if (local_count > 0){
             int old_index = 0;
             while(1){
@@ -65,6 +66,7 @@ void top_down_step(
                 new_frontier->vertices[old_index + neighbor] = local_outgoing[neighbor];
             }
         }
+        printf("fin2\n");
     }
 }
 
