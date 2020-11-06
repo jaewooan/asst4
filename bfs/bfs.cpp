@@ -145,14 +145,6 @@ void bottom_up_step(
             }
         }
     }
-
-    for (int i=0; i<frontier->count; i++) {
-        int frontier_node = frontier->vertices[i];
-        if (up_node == frontier_node) {
-            local_visited = distances[up_node] + 1;
-            break;
-        }
-    }
 }
 
 void bfs_bottom_up(Graph graph, solution* sol)
