@@ -55,7 +55,6 @@ void top_down_step(
             int old_index = __sync_fetch_and_add(&new_frontier->count, local_count);
             for(int neighbor = 0; neighbor < local_count; neighbor++){
                 new_frontier->vertices[old_index + neighbor] = local_outgoing[neighbor];
-                printf("top to bottwom: upstream %d to downstream %d\n", node, local_outgoing[neighbor]);
             }
         }
         free(local_outgoing);
@@ -131,11 +130,9 @@ void bottom_up_step(
                 int up_node = g->incoming_edges[neighbor];
                 for (int i=0; i<frontier->count; i++) {
                     int frontier_node = frontier->vertices[i];
-                    printf("bottom to top check: upstream %d: %d to %d\n", frontier_node, up_node, node);
                     if (up_node == frontier_node) {
                         node_unvisited[node] = false;
                         distances[node] = distances[up_node] + 1;
-                        printf("bottom to top: upstream %d to downstream %d\n", up_node, node);
                         break;
                     }
                 }
@@ -175,13 +172,15 @@ void bfs_bottom_up(Graph graph, solution* sol)
 
     // initialize all nodes to NOT_VISITED
     #pragma omp parallel for schedule(guided)
-    for (int i=0; i<graph->num_nodes; i++)
+    for (int i=0; i<graph->num_nodes; i++){
         sol->distances[i] = NOT_VISITED_MARKER;
+	node_unvisited[i] = true;
+    }
 
     // setup frontier with the root node
     frontier->vertices[frontier->count++] = ROOT_NODE_ID;
     sol->distances[ROOT_NODE_ID] = 0;
-    node_unvisited[ROOT_NODE_ID] = 0;
+    node_unvisited[ROOT_NODE_ID] = false;
 
     while (frontier->count != 0) {
 
