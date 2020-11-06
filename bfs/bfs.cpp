@@ -113,11 +113,12 @@ void bottom_up_step(
     Graph g,
     vertex_set* frontier,
     vertex_set* new_frontier,
-    int* distances)
+    int* distances,
+    vertex_set* node_unvisited)
 {
     #pragma omp parallel for schedule(guided)
     for (int node=0; node<g->num_nodes; node++) {
-        if(distances[node] == NOT_VISITED_MARKER){
+        if(node_unvisited[node]){
             int start_edge = g->incoming_starts[node];
             int end_edge = (node == g->num_nodes - 1)
                            ? g->num_edges
@@ -130,18 +131,26 @@ void bottom_up_step(
                 for (int i=0; i<frontier->count; i++) {
                     int frontier_node = frontier->vertices[i];
                     if (up_node == frontier_node) {
-                        local_visited = distances[up_node] + 1;
+                        node_unvisited[node] = false;
+                        distances[node] = distances[up_node] + 1;
                         break;
                     }
                 }
 
-                if(local_visited != NOT_VISITED_MARKER){
+                if(!node_unvisited[node]){
                     int index = __sync_fetch_and_add(&new_frontier->count, 1);
-                    distances[node] = local_visited;
                     new_frontier->vertices[index] = node;
                     break;
                 }
             }
+        }
+    }
+
+    for (int i=0; i<frontier->count; i++) {
+        int frontier_node = frontier->vertices[i];
+        if (up_node == frontier_node) {
+            local_visited = distances[up_node] + 1;
+            break;
         }
     }
 }
