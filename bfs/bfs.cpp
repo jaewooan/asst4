@@ -141,7 +141,7 @@ void bottom_up_step(
             if (local_count > 0){
                 int old_index = __sync_fetch_and_add(&new_frontier->count, local_count);
                 for(int neighbor = 0; neighbor < local_count; neighbor++){
-                    new_frontier->vertices[old_index + neighbor] = local_outgoing[neighbor];
+                    new_frontier->vertices[old_index + neighbor] = local_incoming[neighbor];
                 }
             }
             free(local_incoming);
