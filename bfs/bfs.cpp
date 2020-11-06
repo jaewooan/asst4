@@ -114,7 +114,7 @@ void bottom_up_step(
     vertex_set* frontier,
     vertex_set* new_frontier,
     int* distances,
-    vertex_set* node_unvisited)
+    bool* node_unvisited)
 {
     #pragma omp parallel for schedule(guided)
     for (int node=0; node<g->num_nodes; node++) {
@@ -176,6 +176,7 @@ void bfs_bottom_up(Graph graph, solution* sol)
 
     vertex_set* frontier = &list1;
     vertex_set* new_frontier = &list2;
+    bool* node_unvisited = (bool*)malloc(sizeof(bool) * graph->num_nodes);
 
     // initialize all nodes to NOT_VISITED
     #pragma omp parallel for schedule(guided)
@@ -185,6 +186,7 @@ void bfs_bottom_up(Graph graph, solution* sol)
     // setup frontier with the root node
     frontier->vertices[frontier->count++] = ROOT_NODE_ID;
     sol->distances[ROOT_NODE_ID] = 0;
+    node_unvisited[ROOT_NODE_ID] = 0;
 
     while (frontier->count != 0) {
 
@@ -194,7 +196,7 @@ void bfs_bottom_up(Graph graph, solution* sol)
 
         vertex_set_clear(new_frontier);
 
-        top_down_step(graph, frontier, new_frontier, sol->distances);
+        top_down_step(graph, frontier, new_frontier, sol->distances, node_unvisited);
 
 #ifdef VERBOSE
     double end_time = CycleTimer::currentSeconds();
@@ -206,6 +208,8 @@ void bfs_bottom_up(Graph graph, solution* sol)
         frontier = new_frontier;
         new_frontier = tmp;
     }
+
+    free(node_unvisited);
 }
 
 void bfs_hybrid(Graph graph, solution* sol)
