@@ -115,36 +115,31 @@ void bottom_up_step(
     vertex_set* new_frontier,
     int* distances)
 {
-    #pragma omp parallel for schedule(guided)
+    //#pragma omp parallel for schedule(guided)
     for (int node=0; node<g->num_nodes; node++) {
         if(distances[node] == NOT_VISITED_MARKER){
             int start_edge = g->incoming_starts[node];
             int end_edge = (node == g->num_nodes - 1)
                            ? g->num_edges
                            : g->incoming_starts[node + 1];
-            int* local_incoming = (int*)malloc(sizeof(int) * (end_edge - start_edge));
 
             // attempt to add all neighbors to the new frontier
             int local_count = 0;
             for (int neighbor=start_edge; neighbor<end_edge; neighbor++) {
-                int incoming = g->incoming_edges[neighbor];
+                int up_node = g->incoming_edges[neighbor];
                 for (int i=0; i<frontier->count; i++) {
                     int frontier_node = frontier->vertices[i];
-                    if (incoming == frontier_node) {
-                        distances[incoming] = distances[frontier_node] + 1;
-                        local_incoming[local_count] = incoming;    
-                        local_count++;	
+                    if (up_node == frontier_node) {
+                        distances[node] = distances[up_node] + 1;
+                        int index = new_frontier->count++;
+                        new_frontier->vertices[index] = node;
+                        break;
                     }
+                }                    
+                if(distances[node] != NOT_VISITED_MARKER){
+                    break;
                 }
             }
-
-            if (local_count > 0){
-                int old_index = __sync_fetch_and_add(&new_frontier->count, local_count);
-                for(int neighbor = 0; neighbor < local_count; neighbor++){
-                    new_frontier->vertices[old_index + neighbor] = local_incoming[neighbor];
-                }
-            }
-            free(local_incoming);
         }
     }
 }
@@ -188,7 +183,7 @@ void bfs_bottom_up(Graph graph, solution* sol)
 
         vertex_set_clear(new_frontier);
 
-        bottom_up_step(graph, frontier, new_frontier, sol->distances);
+        top_down_step(graph, frontier, new_frontier, sol->distances);
 
 #ifdef VERBOSE
     double end_time = CycleTimer::currentSeconds();
