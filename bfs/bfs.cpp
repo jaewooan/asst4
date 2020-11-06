@@ -128,14 +128,14 @@ void bottom_up_step(
             // attempt to add all neighbors to the new frontier            
             int local_visited = NOT_VISITED_MARKER;
             for (int neighbor=start_edge; neighbor<end_edge; neighbor++) {
-                printf("bottom to top check: downstream from %d: %d\n", up_node, node);
                 int up_node = g->incoming_edges[neighbor];
                 for (int i=0; i<frontier->count; i++) {
                     int frontier_node = frontier->vertices[i];
+                    printf("bottom to top check: upstream %d: %d to %d\n", frontier_node, up_node, node);
                     if (up_node == frontier_node) {
                         node_unvisited[node] = false;
                         distances[node] = distances[up_node] + 1;
-                        printf("bottom to top: downstream from %d: %d\n", up_node, node);
+                        printf("bottom to top: upstream %d to downstream %d\n", up_node, node);
                         break;
                     }
                 }
