@@ -133,6 +133,7 @@ void bottom_up_step(
                     if (up_node == frontier_node) {
                         node_unvisited[node] = false;
                         distances[node] = distances[up_node] + 1;
+                        printf("downstream from %d: %d\n", up_node, node);
                         break;
                     }
                 }
