@@ -55,6 +55,7 @@ void top_down_step(
             int old_index = __sync_fetch_and_add(&new_frontier->count, local_count);
             for(int neighbor = 0; neighbor < local_count; neighbor++){
                 new_frontier->vertices[old_index + neighbor] = local_outgoing[neighbor];
+                printf("upstream %d to downstream %d\n", node, local_outgoing[neighbor]);
             }
         }
         free(local_outgoing);
@@ -124,10 +125,11 @@ void bottom_up_step(
                            ? g->num_edges
                            : g->incoming_starts[node + 1];
 
-            // attempt to add all neighbors to the new frontier
+            // attempt to add all neighbors to the new frontier            
             int local_visited = NOT_VISITED_MARKER;
             for (int neighbor=start_edge; neighbor<end_edge; neighbor++) {
                 int up_node = g->incoming_edges[neighbor];
+                printf("upstream: %d, downstream: %d\n", up_node, node);
                 for (int i=0; i<frontier->count; i++) {
                     int frontier_node = frontier->vertices[i];
                     if (up_node == frontier_node) {
