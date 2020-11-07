@@ -32,7 +32,7 @@ void top_down_step(
     int* distances)
 {
     int new_distance = distances[frontier->vertices[0]] + 1;;
-    #pragma omp parallel for schedule(guided)
+    #pragma omp parallel for
     for (int i=0; i<frontier->count; i++) {
         int node = frontier->vertices[i];
         int start_edge = g->outgoing_starts[node];
@@ -93,7 +93,7 @@ void bfs_top_down(Graph graph, solution* sol) {
 
         vertex_set_clear(new_frontier);
 
-        top_doxwn_step(graph, frontier, new_frontier, sol->distances);
+        top_doxn_step(graph, frontier, new_frontier, sol->distances);
 
 #ifdef VERBOSE
     double end_time = CycleTimer::currentSeconds();
@@ -133,7 +133,7 @@ void bottom_up_step(
         nCount[iThread] = 0;
     }
 
-    #pragma omp parallel for schedule(guided)
+    #pragma omp parallel for
     for (int node=0; node<g->num_nodes; node++) {
         if(node_unvisited[node]){
             int start_edge = g->incoming_starts[node];
@@ -246,7 +246,7 @@ void bfs_hybrid(Graph graph, solution* sol)
     bool* node_unvisited = (bool*)malloc(sizeof(bool) * graph->num_nodes);
 
     // initialize all nodes to NOT_VISITED
-    #pragma omp parallel for schedule(guided)
+    #pragma omp parallel for
     for (int i=0; i<graph->num_nodes; i++){
         sol->distances[i] = NOT_VISITED_MARKER;
         node_unvisited[i] = true;
