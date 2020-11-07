@@ -125,18 +125,14 @@ void bottom_up_step(
         nTotThreads = omp_get_num_threads();
     }
 
-    /*bool* is_new_frontier = (bool*)malloc(sizeof(bool) * g->num_nodes);
+    bool* is_new_frontier = (bool*)malloc(sizeof(bool) * g->num_nodes);
     int new_distance = distances[frontier->vertices[0]] + 1;
     int* num_threads = (int*)malloc(sizeof(int)* g->num_nodes*nTotThreads);
-    int* nCount = (int*)malloc(sizeof(int)* nTotThreads);*/
-    int new_distance = distances[frontier->vertices[0]] + 1;
-    bool is_new_frontier[g->num_nodes];
-    int num_threads[g->num_nodes*nTotThreads];
-    int nCount[nTotThreads];
+    int* nCount = (int*)malloc(sizeof(int)* nTotThreads);
 
-    /*for(int iThread = 0; iThread < nTotThreads; iThread++){
+    for(int iThread = 0; iThread < nTotThreads; iThread++){
         nCount[iThread] = 0;
-    }*/
+    }
 
     #pragma omp parallel for
     for (int node=0; node<g->num_nodes; node++) {
@@ -153,26 +149,26 @@ void bottom_up_step(
                 if(!node_unvisited[up_node]){
                     int iThread = omp_get_thread_num();
                     distances[node] = new_distance;
-                    num_threads[iThread*g->num_nodes + nCount[iThread]++] = node;
-                    //nCount[iThread]++;
+                    num_threads[iThread*g->num_nodes + nCount[iThread]] = node;
+                    nCount[iThread]++;
                     break;
                 }
             }
         }
     }
 
-    #pragma omp parallel// for schedule(guided)
+    #pragma omp parallel for schedule(guided)
     for(int iThread = 0; iThread < nTotThreads; iThread++){
         int index = __sync_fetch_and_add(&new_frontier->count, nCount[iThread]);
         for(int i = 0; i < nCount[iThread]; i++){
-	        int node = num_threads[iThread*g->num_nodes + i];
-	        node_unvisited[node] = false;
+	    int node = num_threads[iThread*g->num_nodes + i];
+	    node_unvisited[node] = false;
             new_frontier->vertices[index + i] = node;
         }
     }
-    /*free(is_new_frontier);
+    free(is_new_frontier);
     free(num_threads);
-    free(nCount);*/
+    free(nCount);
 }
 
 void bfs_bottom_up(Graph graph, solution* sol)
