@@ -116,6 +116,22 @@ void bottom_up_step(
     int* distances,
     bool* node_unvisited)
 {
+    int nTotThreads = 0;
+    #pragma omp parallel
+    {
+        #pragma omp single
+        nTotThreads = omp_get_num_threads();
+    }
+
+    bool* is_new_frontier = (bool*)malloc(sizeof(bool) * graph->num_nodes);
+    int new_distance = distances[frontier->vertices[0]] + 1;
+    int* num_threads = (int*)malloc(sizeof(int)* graph->num_nodes*nTotThreads);
+    int* nCount = (int*)malloc(sizeof(int)* nTotThreads);
+
+    for(int iThread = 0; iThread < nTotThreads; iThread++){
+        nCount[iThread] = 0;
+    }
+
     #pragma omp parallel for schedule(guided)
     for (int node=0; node<g->num_nodes; node++) {
         if(node_unvisited[node]){
@@ -128,21 +144,24 @@ void bottom_up_step(
             int local_visited = NOT_VISITED_MARKER;
             for (int neighbor=start_edge; neighbor<end_edge; neighbor++) {
                 int up_node = g->incoming_edges[neighbor];
-                for (int i=0; i<frontier->count; i++) {
-                    int frontier_node = frontier->vertices[i];
-                    if (up_node == frontier_node) {
-                        node_unvisited[node] = false;
-                        distances[node] = distances[up_node] + 1;
-                        break;
-                    }
-                }
-
-                if(!node_unvisited[node]){
-                    int index = __sync_fetch_and_add(&new_frontier->count, 1);
-                    new_frontier->vertices[index] = node;
+                if(!node_unvisited[up_node]){
+                    int iThread = omp_get_thread_num();
+                    node_unvisited[node] = false;
+                    is_new_frontier[node] = true;
+                    distances[node] = new_distance;
+                    num_threads[iThread*g->num_nodes + nCount[iThread]] = node;
+                    nCount[iThread]++;
                     break;
                 }
             }
+        }
+    }
+
+    #pragma omp parallel for schedule(guided)
+    for(int iThread = 0; iThread < nTotThreads; iThread++){
+        int index = __sync_fetch_and_add(&new_frontier->count, nCount[omp_get_thread_num()]);
+        for(int i = 0; i < nCount[omp_get_thread_num()]; i++){
+            new_frontier->vertices[index + i] = num_threads[iThread*g->num_nodes + i];
         }
     }
 }
@@ -174,7 +193,7 @@ void bfs_bottom_up(Graph graph, solution* sol)
     #pragma omp parallel for schedule(guided)
     for (int i=0; i<graph->num_nodes; i++){
         sol->distances[i] = NOT_VISITED_MARKER;
-	node_unvisited[i] = true;
+        node_unvisited[i] = true;
     }
 
     // setup frontier with the root node
