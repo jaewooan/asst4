@@ -39,8 +39,8 @@ void top_down_step(
         int end_edge = (node == g->num_nodes - 1)
                            ? g->num_edges
                            : g->outgoing_starts[node + 1];
-        //int* local_outgoing = (int*)malloc(sizeof(int) * (end_edge - start_edge));
-        int local_outgoing[end_edge - start_edge];
+        int* local_outgoing = (int*)malloc(sizeof(int) * (end_edge - start_edge));
+        //int local_outgoing[end_edge - start_edge];
 
         // attempt to add all neighbors to the new frontier
         int local_count = 0;
@@ -59,7 +59,7 @@ void top_down_step(
                 new_frontier->vertices[old_index + neighbor] = local_outgoing[neighbor];
             }
         }
-        //free(local_outgoing);
+        free(local_outgoing);
     }
 }
 
@@ -156,12 +156,12 @@ void bottom_up_step(
         }
     }
 
-    #pragma omp parallel
+    #pragma omp parallel for
     for(int iThread = 0; iThread < nTotThreads; iThread++){
         int index = __sync_fetch_and_add(&new_frontier->count, nCount[iThread]);
         for(int i = 0; i < nCount[iThread]; i++){
-	    int node = num_threads[iThread*g->num_nodes + i];
-	    node_unvisited[node] = false;
+	        int node = num_threads[iThread*g->num_nodes + i];
+	        node_unvisited[node] = false;
             new_frontier->vertices[index + i] = node;
         }
     }
