@@ -149,7 +149,6 @@ void bottom_up_step(
                     distances[node] = new_distance;
                     num_threads[iThread*g->num_nodes + nCount[iThread]] = node;
                     nCount[iThread]++;
-		            printf("total count %d, added node %d, upstream %d, distance %d \n", nCount[iThread], node, up_node, new_distance);
                     break;
                 }
             }
@@ -168,8 +167,6 @@ void bottom_up_step(
     free(is_new_frontier);
     free(num_threads);
     free(nCount);
-
-    printf("end\n");
 }
 
 void bfs_bottom_up(Graph graph, solution* sol)
