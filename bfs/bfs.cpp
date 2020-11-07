@@ -125,7 +125,6 @@ void bottom_up_step(
         nTotThreads = omp_get_num_threads();
     }
 
-    bool* is_new_frontier = (bool*)malloc(sizeof(bool) * g->num_nodes);
     int new_distance = distances[frontier->vertices[0]] + 1;
     int* num_threads = (int*)malloc(sizeof(int)* g->num_nodes*nTotThreads);
     int* nCount = (int*)malloc(sizeof(int)* nTotThreads);
@@ -157,7 +156,7 @@ void bottom_up_step(
         }
     }
 
-    #pragma omp parallel for schedule(guided)
+    #pragma omp parallel
     for(int iThread = 0; iThread < nTotThreads; iThread++){
         int index = __sync_fetch_and_add(&new_frontier->count, nCount[iThread]);
         for(int i = 0; i < nCount[iThread]; i++){
@@ -166,7 +165,6 @@ void bottom_up_step(
             new_frontier->vertices[index + i] = node;
         }
     }
-    free(is_new_frontier);
     free(num_threads);
     free(nCount);
 }
