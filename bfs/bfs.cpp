@@ -146,11 +146,10 @@ void bottom_up_step(
                 int up_node = g->incoming_edges[neighbor];
                 if(!node_unvisited[up_node]){
                     int iThread = omp_get_thread_num();
-                    node_unvisited[node] = false;
-                    is_new_frontier[node] = true;
                     distances[node] = new_distance;
                     num_threads[iThread*g->num_nodes + nCount[iThread]] = node;
                     nCount[iThread]++;
+		    printf("total count %d, added node %d, upstream %d, distance %d \n", nCount[iThread], node, up_node, new_distance);
                     break;
                 }
             }
@@ -161,9 +160,12 @@ void bottom_up_step(
     for(int iThread = 0; iThread < nTotThreads; iThread++){
         int index = __sync_fetch_and_add(&new_frontier->count, nCount[omp_get_thread_num()]);
         for(int i = 0; i < nCount[omp_get_thread_num()]; i++){
-            new_frontier->vertices[index + i] = num_threads[iThread*g->num_nodes + i];
+	    int node = num_threads[iThread*g->num_nodes + i];
+	    node_unvisited[node] = false;
+            new_frontier->vertices[index + i] = node;
         }
     }
+    printf("end\n");
 }
 
 void bfs_bottom_up(Graph graph, solution* sol)
