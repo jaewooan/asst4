@@ -123,9 +123,9 @@ void bottom_up_step(
         nTotThreads = omp_get_num_threads();
     }
 
-    bool* is_new_frontier = (bool*)malloc(sizeof(bool) * graph->num_nodes);
+    bool* is_new_frontier = (bool*)malloc(sizeof(bool) * g->num_nodes);
     int new_distance = distances[frontier->vertices[0]] + 1;
-    int* num_threads = (int*)malloc(sizeof(int)* graph->num_nodes*nTotThreads);
+    int* num_threads = (int*)malloc(sizeof(int)* g->num_nodes*nTotThreads);
     int* nCount = (int*)malloc(sizeof(int)* nTotThreads);
 
     for(int iThread = 0; iThread < nTotThreads; iThread++){
