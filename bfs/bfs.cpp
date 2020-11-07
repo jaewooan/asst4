@@ -169,9 +169,9 @@ void bottom_up_step(
             new_frontier->vertices[index + i] = node;
         }
     }
-    free(is_new_frontier);
+    /*free(is_new_frontier);
     free(num_threads);
-    free(nCount);
+    free(nCount);*/
 }
 
 void bfs_bottom_up(Graph graph, solution* sol)
