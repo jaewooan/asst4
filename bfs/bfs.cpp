@@ -41,15 +41,14 @@ void top_down_step(
                            ? g->num_edges
                            : g->outgoing_starts[node + 1];
         int* local_outgoing = (int*)malloc(sizeof(int) * (end_edge - start_edge));
-        //int local_outgoing[end_edge - start_edge];
 
         // attempt to add all neighbors to the new frontier
         int local_count = 0;
         for (int neighbor=start_edge; neighbor<end_edge; neighbor++) {
             int outgoing = g->outgoing_edges[neighbor];
+            if (!node_unvisited[outgoing]) continue;
             if (distances[outgoing] == NOT_VISITED_MARKER) {
                 distances[outgoing] = new_distance;   
-                node_unvisited[outgoing] = false;
                 local_outgoing[local_count] = outgoing; 
                 local_count++;
             }
@@ -163,9 +162,7 @@ void bottom_up_step(
     for(int iThread = 0; iThread < nTotThreads; iThread++){
         int index = __sync_fetch_and_add(&new_frontier->count, nCount[iThread]);
         for(int i = 0; i < nCount[iThread]; i++){
-	        int node = num_threads[iThread*g->num_nodes + i];
-	        node_unvisited[node] = false;
-            new_frontier->vertices[index + i] = node;
+            new_frontier->vertices[index + i] = num_threads[iThread*g->num_nodes + i];
         }
     }
     free(num_threads);
@@ -216,6 +213,11 @@ void bfs_bottom_up(Graph graph, solution* sol)
         vertex_set_clear(new_frontier);
 
         bottom_up_step(graph, frontier, new_frontier, sol->distances, node_unvisited);
+
+        #pragma omp parallel for
+        for (int i=0; i<new_frontier->count; i++){
+            node_unvisited[new_frontier->vertices[i]] = false;
+        }
 
 #ifdef VERBOSE
     double end_time = CycleTimer::currentSeconds();
@@ -278,6 +280,11 @@ void bfs_hybrid(Graph graph, solution* sol)
         } else{
             top_down_step(graph, frontier, new_frontier, sol->distances, node_unvisited);
         }        
+
+        #pragma omp parallel for
+        for (int i=0; i<new_frontier->count; i++){
+            node_unvisited[new_frontier->vertices[i]] = false;
+        }
 
 #ifdef VERBOSE
     double end_time = CycleTimer::currentSeconds();
