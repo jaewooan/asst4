@@ -260,13 +260,13 @@ void bfs_hybrid(Graph graph, solution* sol)
     frontier->vertices[frontier->count++] = ROOT_NODE_ID;
     sol->distances[ROOT_NODE_ID] = 0;
     node_unvisited[ROOT_NODE_ID] = false;
-
-    int nTotThreads = 0;
+    int nLeft = graph->num_nodes - 1;
+    /*int nTotThreads = 0;
     #pragma omp parallel
     {
         #pragma omp single
         nTotThreads = omp_get_num_threads();
-    }
+    }*/
 
     while (frontier->count != 0) {
 
@@ -275,7 +275,7 @@ void bfs_hybrid(Graph graph, solution* sol)
 #endif
 
         vertex_set_clear(new_frontier);
-        if(nTotThreads < frontier->count){
+        if(nLeft < frontier->count){
             bottom_up_step(graph, frontier, new_frontier, sol->distances, node_unvisited);
         } else{
             top_down_step(graph, frontier, new_frontier, sol->distances, node_unvisited);
@@ -290,6 +290,7 @@ void bfs_hybrid(Graph graph, solution* sol)
         vertex_set* tmp = frontier;
         frontier = new_frontier;
         new_frontier = tmp;
+        nLeft -= new_frontier->count;
     }
 
     free(node_unvisited);
