@@ -29,7 +29,8 @@ void top_down_step(
     Graph g,
     vertex_set* frontier,
     vertex_set* new_frontier,
-    int* distances)
+    int* distances,
+    bool* node_unvisited)
 {
     int new_distance = distances[frontier->vertices[0]] + 1;
     #pragma omp parallel for
@@ -47,8 +48,9 @@ void top_down_step(
         for (int neighbor=start_edge; neighbor<end_edge; neighbor++) {
             int outgoing = g->outgoing_edges[neighbor];
             if (distances[outgoing] == NOT_VISITED_MARKER) {
-                distances[outgoing] = new_distance;
-                local_outgoing[local_count] = outgoing;    
+                distances[outgoing] = new_distance;   
+	            node_unvisited[outgoing] = false;
+                local_outgoing[local_count] = outgoing; 
 	  	        local_count++;
             }
         }
@@ -273,7 +275,7 @@ void bfs_hybrid(Graph graph, solution* sol)
         if(nTotThreads < frontier->count){
             bottom_up_step(graph, frontier, new_frontier, sol->distances, node_unvisited);
         } else{
-            top_down_step(graph, frontier, new_frontier, sol->distances);
+            top_down_step(graph, frontier, new_frontier, sol->distances, node_unvisited);
         }        
 
 #ifdef VERBOSE
