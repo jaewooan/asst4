@@ -5,6 +5,7 @@
 #include <string.h>
 #include <cstddef>
 #include <omp.h>
+#include <vector>
 
 #include "../common/CycleTimer.h"
 #include "../common/graph.h"
@@ -46,17 +47,18 @@ void top_down_step(
         int local_count = 0;
         for (int neighbor=start_edge; neighbor<end_edge; neighbor++) {
             int outgoing = g->outgoing_edges[neighbor];
-            int cur_distance = distances[outgoing];
+            //int cur_distance = distances[outgoing];
             if (!node_unvisited[outgoing]) continue;
-            if (cur_distance != NOT_VISITED_MARKER) continue;
-            if (!__sync_bool_compare_and_swap(&distances[outgoing], cur_distance, new_distance)) {
-                //distances[outgoing] = new_distance;   
+            if (distances[outgoing] == NOT_VISITED_MARKER){
+            //if (__sync_bool_compare_and_swap(&distances[outgoi!ng], NOT_VISITED_MARKER, new_distance)) {
+                distances[outgoing] = new_distance;   
                 local_outgoing[local_count] = outgoing; 
                 local_count++;
                 //local_outgoing.push_back(outgoing);
             }
         }
 
+	//int local_count = local_outgoing.size();
         if (local_count > 0){
             int old_index = __sync_fetch_and_add(&new_frontier->count, local_count);
             for(int neighbor = 0; neighbor < local_count; neighbor++){
@@ -280,7 +282,7 @@ void bfs_hybrid(Graph graph, solution* sol)
 #endif
 
         vertex_set_clear(new_frontier);
-        if(nLeft < frontier->count){
+        if(nLeft*0.01 < frontier->count){
             bottom_up_step(graph, frontier, new_frontier, sol->distances, node_unvisited);
         } else{
             top_down_step(graph, frontier, new_frontier, sol->distances, node_unvisited);
