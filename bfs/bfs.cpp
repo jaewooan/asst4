@@ -78,11 +78,14 @@ void bfs_top_down(Graph graph, solution* sol) {
 
     vertex_set* frontier = &list1;
     vertex_set* new_frontier = &list2;
+    bool* node_unvisited = (bool*)malloc(sizeof(bool) * graph->num_nodes);
 
     // initialize all nodes to NOT_VISITED
     #pragma omp parallel for schedule(guided)
-    for (int i=0; i<graph->num_nodes; i++)
+    for (int i=0; i<graph->num_nodes; i++){
         sol->distances[i] = NOT_VISITED_MARKER;
+        node_unvisited[i] = true;
+    }
 
     // setup frontier with the root node
     frontier->vertices[frontier->count++] = ROOT_NODE_ID;
@@ -96,7 +99,7 @@ void bfs_top_down(Graph graph, solution* sol) {
 
         vertex_set_clear(new_frontier);
 
-        top_down_step(graph, frontier, new_frontier, sol->distances);
+        top_down_step(graph, frontier, new_frontier, sol->distances, node_unvisited);
 
 #ifdef VERBOSE
     double end_time = CycleTimer::currentSeconds();
