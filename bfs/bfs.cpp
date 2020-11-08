@@ -39,8 +39,8 @@ void top_down_step(
         int end_edge = (node == g->num_nodes - 1)
                            ? g->num_edges
                            : g->outgoing_starts[node + 1];
-        //int* local_outgoing = (int*)malloc(sizeof(int) * (end_edge - start_edge));
-        int local_outgoing[end_edge - start_edge];
+        int* local_outgoing = (int*)malloc(sizeof(int) * (end_edge - start_edge));
+        //int local_outgoing[end_edge - start_edge];
 
         // attempt to add all neighbors to the new frontier
         int local_count = 0;
@@ -48,8 +48,8 @@ void top_down_step(
             int outgoing = g->outgoing_edges[neighbor];
             if (distances[outgoing] == NOT_VISITED_MARKER) {
                 distances[outgoing] = new_distance;
-                local_outgoing[local_count++] = outgoing;    
-	  	        //local_count++;	
+                local_outgoing[local_count] = outgoing;    
+	  	local_count++;
             }
         }
 
@@ -59,7 +59,7 @@ void top_down_step(
                 new_frontier->vertices[old_index + neighbor] = local_outgoing[neighbor];
             }
         }
-        //free(local_outgoing);
+        free(local_outgoing);
     }
 }
 
