@@ -31,7 +31,7 @@ void top_down_step(
     vertex_set* new_frontier,
     int* distances)
 {
-    int new_distance = distances[frontier->vertices[0]] + 1;;
+    int new_distance = distances[frontier->vertices[0]] + 1;
     #pragma omp parallel for
     for (int i=0; i<frontier->count; i++) {
         int node = frontier->vertices[i];
@@ -49,7 +49,7 @@ void top_down_step(
             if (distances[outgoing] == NOT_VISITED_MARKER) {
                 distances[outgoing] = new_distance;
                 local_outgoing[local_count] = outgoing;    
-	  	local_count++;
+	  	        local_count++;
             }
         }
 
@@ -256,6 +256,13 @@ void bfs_hybrid(Graph graph, solution* sol)
     sol->distances[ROOT_NODE_ID] = 0;
     node_unvisited[ROOT_NODE_ID] = false;
 
+    int nTotThreads = 0;
+    #pragma omp parallel
+    {
+        #pragma omp single
+        nTotThreads = omp_get_num_threads();
+    }
+
     while (frontier->count != 0) {
 
 #ifdef VERBOSE
@@ -263,8 +270,11 @@ void bfs_hybrid(Graph graph, solution* sol)
 #endif
 
         vertex_set_clear(new_frontier);
-
-        bottom_up_step(graph, frontier, new_frontier, sol->distances, node_unvisited);
+        if(nTotThreads < frontier->count){
+            bottom_up_step(graph, frontier, new_frontier, sol->distances, node_unvisited);
+        } else{
+            top_down_step(graph, frontier, new_frontier, sol->distances);
+        }        
 
 #ifdef VERBOSE
     double end_time = CycleTimer::currentSeconds();
