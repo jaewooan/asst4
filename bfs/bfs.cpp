@@ -49,9 +49,9 @@ void top_down_step(
             int outgoing = g->outgoing_edges[neighbor];
             if (distances[outgoing] == NOT_VISITED_MARKER) {
                 distances[outgoing] = new_distance;   
-	            node_unvisited[outgoing] = false;
+                node_unvisited[outgoing] = false;
                 local_outgoing[local_count] = outgoing; 
-	  	        local_count++;
+                local_count++;
             }
         }
 
@@ -146,11 +146,9 @@ void bottom_up_step(
                            ? g->num_edges
                            : g->incoming_starts[node + 1];
 
-            // attempt to add all neighbors to the new frontier            
-            int local_visited = NOT_VISITED_MARKER;
+            // attempt to add all neighbors to the new frontier     
             for (int neighbor=start_edge; neighbor<end_edge; neighbor++) {
-                int up_node = g->incoming_edges[neighbor];
-                if(!node_unvisited[up_node]){
+                if(!node_unvisited[g->incoming_edges[neighbor]]){
                     int iThread = omp_get_thread_num();
                     distances[node] = new_distance;
                     num_threads[iThread*g->num_nodes + nCount[iThread]] = node;
