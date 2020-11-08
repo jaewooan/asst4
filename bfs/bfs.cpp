@@ -41,16 +41,19 @@ void top_down_step(
                            ? g->num_edges
                            : g->outgoing_starts[node + 1];
         int* local_outgoing = (int*)malloc(sizeof(int) * (end_edge - start_edge));
-
+        //std::vector<int> local_outgoing;
         // attempt to add all neighbors to the new frontier
         int local_count = 0;
         for (int neighbor=start_edge; neighbor<end_edge; neighbor++) {
             int outgoing = g->outgoing_edges[neighbor];
+            int cur_distance = distances[outgoing];
             if (!node_unvisited[outgoing]) continue;
-            if (distances[outgoing] == NOT_VISITED_MARKER) {
-                distances[outgoing] = new_distance;   
+            if (cur_distance != NOT_VISITED_MARKER) continue;
+            if (!__sync_bool_compare_and_swap(&distances[outgoing], cur_distance, new_distance)) {
+                //distances[outgoing] = new_distance;   
                 local_outgoing[local_count] = outgoing; 
                 local_count++;
+                //local_outgoing.push_back(outgoing);
             }
         }
 
@@ -110,6 +113,8 @@ void bfs_top_down(Graph graph, solution* sol) {
         frontier = new_frontier;
         new_frontier = tmp;
     }
+
+    free(node_unvisited);
 }
 
 // Take one step of "bottom-up" BFS.  For each vertex on the frontier,
